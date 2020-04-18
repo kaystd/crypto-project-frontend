@@ -2,18 +2,26 @@ const path = require('path')
 const webpack = require('webpack')
 
 module.exports = {
-  entry: './src/index.js',
+  entry: './src/index.ts',
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: ['babel-loader'],
+        test: /\.tsx?$/,
+        loader: 'awesome-typescript-loader',
+        options: {
+          useBabel: true,
+          babelCore: '@babel/core',
+        },
+      },
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        use: ['source-map-loader'],
       },
     ],
   },
   resolve: {
-    extensions: ['*', '.js', '.jsx'],
+    extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
   },
   output: {
     filename: 'bundle.js',
