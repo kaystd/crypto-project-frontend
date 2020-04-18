@@ -1,4 +1,4 @@
-export default () => {
+export default (): Element => {
   const element = document.createElement('div')
 
   element.innerHTML = 'Hello, World!'
