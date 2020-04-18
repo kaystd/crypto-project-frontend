@@ -18,6 +18,10 @@ module.exports = {
         test: /\.js$/,
         use: ['source-map-loader'],
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
     ],
   },
   resolve: {
