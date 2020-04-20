@@ -38,6 +38,7 @@ module.exports = {
     compress: true,
     host: 'localhost',
     port: 3000,
+    open: true,
     overlay: {
       warnings: true,
       errors: true,
