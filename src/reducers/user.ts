@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { requestGet, requestLogin, requestPost, RequestType, setToken } from '../lib'
+import { deleteToken, requestGet, requestLogin, requestPost, RequestType, setToken } from '../lib'
 import { AppDispatch } from '../store'
 import { showNotification } from './notification'
 
@@ -152,4 +152,9 @@ export const signUpUser = (user: RegUser) => (dispatch: AppDispatch): Promise<Us
       return Promise.reject(error)
     }
   )
+}
+
+export const logout = () => (dispatch: AppDispatch) => {
+  deleteToken()
+  dispatch(userLogout())
 }

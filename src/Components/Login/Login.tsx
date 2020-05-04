@@ -20,6 +20,11 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: '40%',
       display: 'flex',
       flexDirection: 'column',
+      border: 'solid',
+      borderRadius: 4,
+      borderColor: 'rgba(0, 0, 0, 0.12)',
+      borderWidth: 1,
+      padding: theme.spacing(1)
     },
     field: {
       margin: theme.spacing(1),

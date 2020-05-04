@@ -2,15 +2,14 @@ import React, { ReactElement, useEffect } from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
 
 import { fetchUser, LoadingState } from '../../reducers'
 import { AppDispatch, RootState } from '../../store'
-import { getToken } from '../../lib'
 import { Login } from '../Login'
-import { RegistrationComponent } from '../Registration'
+import { User } from '../User'
+import { AppHeader } from '../AppHeader'
 
 interface Props {
   loading: LoadingState;
@@ -32,18 +31,12 @@ const useStyles = makeStyles({
 })
 
 const MainComponent = ({ loading, userIsAuthenticated, fetchUser, error }: Props): ReactElement => {
-  const classes = useStyles()
-
   useEffect(() => {
     fetchUser()
   }, [])
 
   const renderAppBar = (
-    <AppBar position='static'>
-      <Toolbar>
-        <Typography className={classes.appHeader} variant='h6'>Добро пожаловать!</Typography>
-      </Toolbar>
-    </AppBar>
+    <AppHeader />
   )
 
   const renderLogin = (
@@ -51,9 +44,7 @@ const MainComponent = ({ loading, userIsAuthenticated, fetchUser, error }: Props
   )
 
   const renderUser = (
-    <div>
-      User
-    </div>
+    <User />
   )
 
   return (
