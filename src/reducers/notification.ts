@@ -23,7 +23,7 @@ export const notificationSlice = createSlice({
     changeNotificationState: (state, action): void => {
       state.open = action.payload
     },
-    showError: (state, action): void => {
+    showNotification: (state, action): void => {
       state.open = true
       state.timestamp = Date.now()
       state.message = action.payload
@@ -31,4 +31,4 @@ export const notificationSlice = createSlice({
   }
 })
 
-export const { actions: { showError, changeNotificationState } } = notificationSlice
+export const { actions: { showNotification, changeNotificationState } } = notificationSlice

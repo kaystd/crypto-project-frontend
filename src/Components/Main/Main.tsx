@@ -2,17 +2,20 @@ import React, { ReactElement, useEffect } from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
-
-import { fetchUser } from '../../reducers'
+import CircularProgress from '@material-ui/core/CircularProgress'
+import { makeStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
+
+import { fetchUser, LoadingState } from '../../reducers'
 import { AppDispatch, RootState } from '../../store'
 import { getToken } from '../../lib'
 import { Login } from '../Login'
-import { makeStyles } from '@material-ui/core/styles'
+import { RegistrationComponent } from '../Registration'
 
 interface Props {
+  loading: LoadingState;
   userIsAuthenticated: boolean;
-  fetchUsers(): void;
+  fetchUser(): void;
   error: Error;
 }
 
@@ -20,17 +23,19 @@ const useStyles = makeStyles({
   appHeader: {
     margin: 'auto',
   },
+  preloader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: '1 0 auto',
+  },
 })
 
-const MainComponent = ({ userIsAuthenticated, fetchUsers, error }: Props): ReactElement => {
+const MainComponent = ({ loading, userIsAuthenticated, fetchUser, error }: Props): ReactElement => {
   const classes = useStyles()
 
   useEffect(() => {
-    const token = getToken()
-
-    if (token) {
-      fetchUsers()
-    }
+    fetchUser()
   }, [])
 
   const renderAppBar = (
@@ -54,17 +59,22 @@ const MainComponent = ({ userIsAuthenticated, fetchUsers, error }: Props): React
   return (
     <>
       {renderAppBar}
-      {userIsAuthenticated ? renderUser : renderLogin}
+      {loading === LoadingState.Finish
+        ? userIsAuthenticated
+          ? renderUser
+          : renderLogin
+        : null}
     </>
   )
 }
 
 export const Main = connect(
   (state: RootState) => ({
+    loading: state.user.fetchingUser,
     userIsAuthenticated: state.user.isAuthenticated,
     error: state.user.error,
   }),
   (dispatch: AppDispatch) => ({
-    fetchUsers: (): void => dispatch(fetchUser())
+    fetchUser: (): void => dispatch(fetchUser())
   })
 )(MainComponent)
