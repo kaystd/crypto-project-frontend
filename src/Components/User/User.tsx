@@ -85,6 +85,7 @@ const UserComponent = ({ user }: Props): ReactElement => {
         />
         <TextField
           disabled
+          multiline
           className={classes.field}
           variant='filled'
           label='Обезличенные персональные данные'
@@ -104,6 +105,7 @@ const UserComponent = ({ user }: Props): ReactElement => {
           disabled
           className={classes.field}
           variant='filled'
+          multiline
           label='Деобезличенные персональные данные'
           value={formState.decryptedData}
         />

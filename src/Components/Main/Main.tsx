@@ -1,17 +1,16 @@
 import React, { ReactElement, useEffect } from 'react'
-import AppBar from '@material-ui/core/AppBar'
-import Toolbar from '@material-ui/core/Toolbar'
-import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
 
-import { fetchUser, LoadingState } from '../../reducers'
+import { fetchUser, LoadingState, User as UserModel } from '../../reducers'
 import { AppDispatch, RootState } from '../../store'
 import { Login } from '../Login'
 import { User } from '../User'
 import { AppHeader } from '../AppHeader'
+import { Admin } from '../Admin'
 
 interface Props {
+  user: UserModel;
   loading: LoadingState;
   userIsAuthenticated: boolean;
   fetchUser(): void;
@@ -30,7 +29,7 @@ const useStyles = makeStyles({
   },
 })
 
-const MainComponent = ({ loading, userIsAuthenticated, fetchUser, error }: Props): ReactElement => {
+const MainComponent = ({ user, loading, userIsAuthenticated, fetchUser, error }: Props): ReactElement => {
   useEffect(() => {
     fetchUser()
   }, [])
@@ -43,9 +42,7 @@ const MainComponent = ({ loading, userIsAuthenticated, fetchUser, error }: Props
     <Login />
   )
 
-  const renderUser = (
-    <User />
-  )
+  const renderUser = user?.login === 'Admin' ? <Admin /> : <User />
 
   return (
     <>
@@ -61,9 +58,10 @@ const MainComponent = ({ loading, userIsAuthenticated, fetchUser, error }: Props
 
 export const Main = connect(
   (state: RootState) => ({
+    user: state.user.user,
     loading: state.user.fetchingUser,
     userIsAuthenticated: state.user.isAuthenticated,
-    error: state.user.error,
+    error: state.user.userError,
   }),
   (dispatch: AppDispatch) => ({
     fetchUser: (): void => dispatch(fetchUser())

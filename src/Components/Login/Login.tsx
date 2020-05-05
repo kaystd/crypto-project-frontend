@@ -93,7 +93,7 @@ export const LoginComponent = ({ loading, error, login }: Props): ReactElement =
     login({ login: formState.userName, password: formState.password })
   }
 
-  const disabledLogin = formState.userName.length < 4 && formState.password.length < 4
+  const isLoginButtonActive = formState.userName.length >= 4 && formState.password.length >= 4
   const errorMessage = !!error && error.message.includes('401') ? 'Неверные учетные данные' : undefined
 
   return (
@@ -121,7 +121,7 @@ export const LoginComponent = ({ loading, error, login }: Props): ReactElement =
           <div className={classes.loginButton}>
             <ProgressButton
               loading={loading === LoadingState.Pending}
-              disabled={disabledLogin}
+              disabled={!isLoginButtonActive}
               variant='contained'
               size='large'
               color='primary'
@@ -152,7 +152,7 @@ export const Login = connect(
   (state: RootState) => ({
     loading: state.user.loggingIn,
     userIsAuthenticated: state.user.isAuthenticated,
-    error: state.user.error,
+    error: state.user.userError,
   }),
   (dispatch: AppDispatch) => ({
     login: (credentials: Credentials): void => dispatch(login(credentials))

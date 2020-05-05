@@ -3,6 +3,8 @@ import { createSlice } from '@reduxjs/toolkit'
 import { deleteToken, requestGet, requestLogin, requestPost, RequestType, setToken } from '../lib'
 import { AppDispatch } from '../store'
 import { showNotification } from './notification'
+import { Simulate } from 'react-dom/test-utils'
+import error = Simulate.error
 
 export enum LoadingState {
   Idle = 'Idle',
@@ -24,18 +26,23 @@ export interface RegUser extends User {
 interface State {
   loggingIn: LoadingState;
   fetchingUser: LoadingState;
+  fetchingUsers: LoadingState;
   signingUpUser: LoadingState;
   signedUpUser?: User;
   signUpError?: Error;
   user?: User;
-  error?: Error;
+  users: User[];
+  userError?: Error;
+  usersError?: Error;
   isAuthenticated: boolean;
 }
 
 const initialState = {
   loggingIn: LoadingState.Idle,
   fetchingUser: LoadingState.Idle,
+  fetchingUsers: LoadingState.Idle,
   signingUpUser: LoadingState.Idle,
+  users: [],
   isAuthenticated: false,
 } as State
 
@@ -46,23 +53,19 @@ export const userSlice = createSlice({
     startLoggingIn: (state): void => {
       if ([LoadingState.Idle, LoadingState.Finish].includes(state.loggingIn)) {
         state.loggingIn = LoadingState.Pending
-        state.error = undefined
+        state.userError = undefined
       }
     },
     startFetchingUser: (state): void => {
       if ([LoadingState.Idle, LoadingState.Finish].includes(state.fetchingUser)) {
         state.user = undefined
-        state.error = undefined
+        state.userError = undefined
         state.fetchingUser = LoadingState.Pending
-      }
-    },
-    finishLoading: (state): void => {
-      if (state.fetchingUser === LoadingState.Pending) {
-        state.fetchingUser = LoadingState.Finish
       }
     },
     userReceived: (state, action): void => {
       if (state.fetchingUser === LoadingState.Pending) {
+        state.loggingIn = LoadingState.Finish
         state.fetchingUser = LoadingState.Finish
         state.user = action.payload
         state.isAuthenticated = true
@@ -72,7 +75,7 @@ export const userSlice = createSlice({
       if (state.fetchingUser === LoadingState.Pending || state.loggingIn === LoadingState.Pending) {
         state.loggingIn = LoadingState.Finish
         state.fetchingUser = LoadingState.Finish
-        state.error = action.payload
+        state.userError = action.payload
       }
     }),
     userLogout: (state): void => {
@@ -99,6 +102,25 @@ export const userSlice = createSlice({
         state.signUpError = action.payload
       }
     },
+    startFetchingUsers: (state): void => {
+      if (state.fetchingUsers === LoadingState.Idle) {
+        state.users = []
+        state.usersError = null
+        state.fetchingUsers = LoadingState.Pending
+      }
+    },
+    successFetchingUsers: (state, action): void => {
+      if (state.fetchingUsers === LoadingState.Pending) {
+        state.fetchingUsers = LoadingState.Idle
+        state.users = action.payload
+      }
+    },
+    failFetchingUsers: (state, action): void => {
+      if (state.fetchingUsers === LoadingState.Pending) {
+        state.fetchingUsers = LoadingState.Idle
+        state.usersError = action.payload
+      }
+    },
   },
 })
 
@@ -112,6 +134,9 @@ export const {
     startSigningUp,
     successSigningUp,
     failSigningUp,
+    startFetchingUsers,
+    successFetchingUsers,
+    failFetchingUsers,
   },
 } = userSlice
 
@@ -121,6 +146,15 @@ export const fetchUser = () => (dispatch: AppDispatch): void => {
   requestGet<User>(RequestType.Api, 'user').then(
     user => dispatch(userReceived(user)),
     error => dispatch(userError(error))
+  )
+}
+
+export const fetchUsers = () => (dispatch: AppDispatch): void => {
+  dispatch(startFetchingUsers())
+
+  requestGet<User[]>(RequestType.Api, 'users').then(
+    users => dispatch(successFetchingUsers(users)),
+    error => dispatch(failFetchingUsers(error)),
   )
 }
 

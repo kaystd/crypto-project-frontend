@@ -39,7 +39,6 @@ export const ProgressButton = ({ children, disabled, loading, onClick, ...restPr
         disabled={loading || disabled}
         variant='contained'
         size='large'
-        color='primary'
         onClick={onClick}
       >
         {children}

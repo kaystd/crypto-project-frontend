@@ -1,11 +1,11 @@
 import { combineReducers, configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
 import { notificationSlice, userSlice } from '../reducers'
 import { errorMiddleware } from '../middleware'
-import { getRsaKeySlice } from '../reducers/getRsaKey'
+import { rsaKeySlice } from '../reducers/rsaKey'
 
 const rootReducer = combineReducers({
   user: userSlice.reducer,
-  getRsaKey: getRsaKeySlice.reducer,
+  rsaKey: rsaKeySlice.reducer,
   notification: notificationSlice.reducer,
 })
 

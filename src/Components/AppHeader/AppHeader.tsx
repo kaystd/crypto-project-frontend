@@ -50,7 +50,7 @@ export const AppHeader = connect(
   (state: RootState) => ({
     user: state.user.user,
     isAuthenticated: state.user.isAuthenticated,
-    error: state.user.error,
+    error: state.user.userError,
   }),
   (dispatch: AppDispatch) => ({
     logout: (): void => dispatch(logout())

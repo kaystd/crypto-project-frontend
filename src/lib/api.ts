@@ -28,12 +28,14 @@ const addHandlers = <T>(promise: Promise<Response>, responseType = 'json'): Prom
 
 export const requestPost = <T>(type: RequestType, path: string, body = {}): Promise<T> => {
   const url = makeAPIURL(type, path)
+  const token = type === RequestType.Api ? `Bearer ${getToken()}` : getToken()
+
   return addHandlers<T>(fetch(url, {
     method: 'POST',
     body: JSON.stringify(body),
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getToken()}`,
+      'Authorization': token,
     }
   })).catch((ex: Error) => Promise.reject(ex))
 }

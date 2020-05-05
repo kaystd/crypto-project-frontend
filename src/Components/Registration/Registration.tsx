@@ -12,7 +12,7 @@ import { JSEncrypt } from 'jsencrypt'
 
 import { ProgressButton } from '../ProgressButton'
 import { AppDispatch, RootState } from '../../store'
-import { getRsaKey } from '../../reducers/getRsaKey'
+import { getRsaKey } from '../../reducers/rsaKey'
 import { LoadingState, RegUser, signUpUser, User } from '../../reducers'
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -312,7 +312,7 @@ export const RegistrationComponent = ({ show, onClose, gettingRsaKey, getRsaKey,
 
 export const Registration = connect(
   (state: RootState) => ({
-    gettingRsaKey: state.getRsaKey.loading,
+    gettingRsaKey: state.rsaKey.loadingGet,
     signingUp: state.user.signingUpUser,
   }),
   (dispatch: AppDispatch) => ({
