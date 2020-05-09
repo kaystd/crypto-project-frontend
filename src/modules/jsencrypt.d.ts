@@ -4,5 +4,7 @@ declare module 'jsencrypt' {
     public setPrivateKey(privateKey: string): void
     public encrypt(data: string): string
     public decrypt(encryptedData: string): string
+    public getPrivateKey(): string
+    public getPublicKey(): string
   }
 }

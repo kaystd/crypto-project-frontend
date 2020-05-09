@@ -54,11 +54,16 @@ export const ExpansionListPanel = ({ user, expanded, onChange }: Props): ReactEl
     const encrypt = new JSEncrypt()
     encrypt.setPrivateKey(formState.keyRsa)
     const decrypted = encrypt.decrypt(user.keyGost)
-    console.log(decrypted, formState.keyRsa)
+    let decryptedData = ''
+    try {
+      decryptedData = decryptString(user.userData, decrypted)
+    } catch (err) {
+      decryptedData = 'Неверный ключ'
+    }
 
     setFormState(prevState => ({
       ...prevState,
-      decryptedData: decryptString(user.userData, decrypted),
+      decryptedData,
     }))
   }
 

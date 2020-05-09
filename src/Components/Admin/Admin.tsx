@@ -2,12 +2,14 @@ import React, { ChangeEvent, ReactElement, useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Typography from '@material-ui/core/Typography'
+import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField'
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
+import { JSEncrypt } from 'jsencrypt'
 
 import { AppDispatch, RootState } from '../../store'
 import { fetchUsers, LoadingState, User } from '../../reducers'
 import { ExpansionListPanel } from './ExpansionListPanel'
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
 import { ProgressButton } from '../ProgressButton'
 import { getRsaKey, sendRsaKey } from '../../reducers/rsaKey'
 
@@ -58,7 +60,16 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: theme.spacing(1),
       paddingRight: theme.spacing(2),
       paddingLeft: theme.spacing(2),
-    }
+    },
+    buttonGroup: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+    },
+    groupedButton: {
+      marginRight: theme.spacing(1),
+    },
   })
 )
 
@@ -73,17 +84,24 @@ interface Props {
   setRsaKey: (key: string) => void;
 }
 
-interface State {
+interface PanelState {
   expanded?: string;
+}
+
+interface ProgressState {
+  isRsaPrivKeyDownloaded: boolean;
+  isRsaPubKeyDownloaded: boolean;
 }
 
 interface FormState {
   email: string;
+  rsaPrivKey: string;
   rsaPubKey: string;
 }
 
 const initialFormState = {
   email: '',
+  rsaPrivKey: '',
   rsaPubKey: '',
 } as FormState
 
@@ -91,12 +109,16 @@ export const AdminComponent = ({ settingRsaKey, setRsaKey, gettingRsaKey, getRsa
   const classes = useStyles()
 
   const [formState, setFormState] = useState<FormState>(initialFormState)
+  const [progressStage, setProgressStage] = useState<ProgressState>({
+    isRsaPrivKeyDownloaded: false,
+    isRsaPubKeyDownloaded: false,
+  })
 
   useEffect(() => {
     fetchUsers()
   }, [])
 
-  const [panelState, setPanelState] = useState<State>({
+  const [panelState, setPanelState] = useState<PanelState>({
     expanded: null,
   })
 
@@ -105,7 +127,7 @@ export const AdminComponent = ({ settingRsaKey, setRsaKey, gettingRsaKey, getRsa
     if (type === 'email' && value.length <= 20) {
       const validatedValue = value.replace(/[^A-Za-z0-9@.]/ig, '')
       setFormState(prevState => ({ ...prevState, [type]: validatedValue }))
-    } else if (type === 'rsaPubKey' && value.length <= 900) {
+    } else if (type === 'rsaPrivKey' && value.length <= 900 || type === 'rsaPubKey' && value.length <= 270) {
       setFormState(prevState => ({ ...prevState, [type]: value }))
     }
   }
@@ -125,17 +147,47 @@ export const AdminComponent = ({ settingRsaKey, setRsaKey, gettingRsaKey, getRsa
     setRsaKey(formState.rsaPubKey)
   }
 
+  const generateRsaKeys = (): void => {
+    const encrypt = new JSEncrypt()
+
+    setFormState(prevState => ({
+      ...prevState,
+      rsaPrivKey: encrypt.getPrivateKey(),
+      rsaPubKey: encrypt.getPublicKey(),
+    }))
+    setProgressStage(prevState => ({
+      ...prevState,
+      isRsaPrivKeyDownloaded: false,
+      isRsaPubKeyDownloaded: false,
+    }))
+  }
+
+  const handleDownloadRsaPrivKey = (): void => {
+    setProgressStage(prevState => ({ ...prevState, isRsaPrivKeyDownloaded: true, }))
+  }
+  const handleDownloadRsaPubKey = (): void => {
+    setProgressStage(prevState => ({ ...prevState, isRsaPubKeyDownloaded: true, }))
+  }
+
+  const isSaveRsaPrivKeyButtonActive = formState.rsaPrivKey.length >= 850
+  const isSaveRsaPubKeyButtonActive = formState.rsaPubKey.length >= 250
+
   const isGetRsaKeyButtonActive = formState.email.length >= 4
     && /\S+@\S+\.\S+/.test(formState.email)
 
-  const isSetRsaKeyButtonActive = formState.rsaPubKey.length > 265
+  const isSetRsaKeyButtonActive = formState.rsaPubKey.length > 270
+    && progressStage.isRsaPrivKeyDownloaded
+    && progressStage.isRsaPubKeyDownloaded
+
+  const downloadRsaPrivLink = URL.createObjectURL(new Blob([formState.rsaPrivKey], { type: 'text/plain' }))
+  const downloadRsaPubLink = URL.createObjectURL(new Blob([formState.rsaPubKey], { type: 'text/plain' }))
 
   const renderPreloader = <CircularProgress />
   const renderError = <Typography variant='h4'>Ошибка загрузки данных</Typography>
   const renderList = (
     <div className={classes.root}>
       <div className={classes.container}>
-        <div className={`${classes.form}, ${classes.border}`}>
+        <div style={{ paddingTop: 10, paddingBottom: 10 }} className={`${classes.form}, ${classes.border}`}>
           <div className={classes.column}>
             <TextField
               className={classes.field}
@@ -158,6 +210,16 @@ export const AdminComponent = ({ settingRsaKey, setRsaKey, gettingRsaKey, getRsa
           </div>
           <div className={classes.column}>
             <TextField
+              disabled
+              className={classes.field}
+              variant='filled'
+              multiline
+              label='Закрытый ключ RSA'
+              value={formState.rsaPrivKey}
+              onChange={handleFormChange('rsaPrivKey')}
+            />
+            <TextField
+              disabled
               className={classes.field}
               variant='filled'
               multiline
@@ -165,6 +227,40 @@ export const AdminComponent = ({ settingRsaKey, setRsaKey, gettingRsaKey, getRsa
               value={formState.rsaPubKey}
               onChange={handleFormChange('rsaPubKey')}
             />
+            <Button
+              className={classes.field}
+              variant='contained'
+              size='large'
+              color='primary'
+              onClick={generateRsaKeys}
+            >
+              Сгенерировать ключи
+            </Button>
+            <div className={classes.buttonGroup}>
+              <Button
+                disabled={!isSaveRsaPrivKeyButtonActive}
+                className={classes.groupedButton}
+                variant='contained'
+                size='large'
+                color='primary'
+                href={downloadRsaPrivLink}
+                download='Закрытый ключ RSA.txt'
+                onClick={handleDownloadRsaPrivKey}
+              >
+                Сохранить закрытый ключ в файл
+              </Button>
+              <Button
+                disabled={!isSaveRsaPubKeyButtonActive}
+                variant='contained'
+                size='large'
+                color='primary'
+                href={downloadRsaPubLink}
+                download='Открытый ключ RSA.txt'
+                onClick={handleDownloadRsaPubKey}
+              >
+                Сохранить открытый ключ в файл
+              </Button>
+            </div>
             <ProgressButton
               className={classes.field}
               loading={settingRsaKey === LoadingState.Pending}
