@@ -182,7 +182,7 @@ export const AdminComponent = ({ settingRsaKey, setRsaKey, gettingRsaKey, getRsa
   const downloadRsaPrivLink = URL.createObjectURL(new Blob([formState.rsaPrivKey], { type: 'text/plain' }))
   const downloadRsaPubLink = URL.createObjectURL(new Blob([formState.rsaPubKey], { type: 'text/plain' }))
 
-  const renderPreloader = <CircularProgress />
+  const renderPreloader = <div className={classes.root}><CircularProgress /></div>
   const renderError = <Typography variant='h4'>Ошибка загрузки данных</Typography>
   const renderList = (
     <div className={classes.root}>
